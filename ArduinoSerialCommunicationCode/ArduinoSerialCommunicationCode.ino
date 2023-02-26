@@ -1,18 +1,28 @@
+#include <Adafruit_NeoPixel.h>
+
 #include <Wire.h>
 #define SENSOR_ADDRESS 0x52
+#define NEOPIXEL_PIN 0 // Determine this value once we have the robot.
 
 uint8_t* dataBuffer = new uint8_t[14]; // Proximity Sensor, Infared, Green, Blue, Red (In order of reception).
+uint8_t* LED_ADDRESSES = new uint8_t[2];
+Adafruit_NeoPixel communicationStrip(32, NEOPIXEL_PIN, NEO_GRB ); // This is the strip the human player will use to determine the desired gamepiece.
 
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  writeRegister(0x0, 0b0111);
-  writeRegister(0x04,0b01000000); 
+  writeRegister(0x0, 0b0111); // Set the read modes for the color sensor.
+  writeRegister(0x04,0b01000000); // Set the color sensor resolution and measurement speed. TODO tune this value and see its effect.
 
   // Clear trash data to prevent undefined behavior.
   for(int i = 0; i < 14; i++) {
     dataBuffer[i] = 0; 
   }
+
+  // TODO find the device addresses.
+  LED_ADDRESSES[0] = 0; // This is the LED strip that indicates the currently held gamepiece.
+  LED_ADDRESSES[1] = 0; // This is the LED strip that allows the driver/operator to signal to the human player which gamepiece they want placed onto the field.
+  
 
 }
 
@@ -31,7 +41,7 @@ void loop() {
   }
 
   if(Serial.available() > 0) { // RoboRIO has something to say.
-    interperetCommand(Serial.read());
+    // TODO add the read function once its finished to this section.
   }
   delay(150);
 }
@@ -75,6 +85,5 @@ void sendDataToRoboRIO() {
   }
 }
 
-void interperetCommand(uint8_t command) {
-  // TODO Implement this function.
+void readRoboRIOData(uint8_t* outArray) {
 }
