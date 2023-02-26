@@ -6,7 +6,7 @@ uint8_t* dataBuffer = new uint8_t[14]; // Proximity Sensor, Infared, Green, Blue
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  writeRegister(0x0, 0b0110);
+  writeRegister(0x0, 0b0111);
 
   // Clear trash data to prevent undefined behavior.
   for(int i = 0; i < 3; i++) {
