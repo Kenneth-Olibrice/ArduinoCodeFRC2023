@@ -7,9 +7,10 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   writeRegister(0x0, 0b0111);
+  writeRegister(0x04,0b01000000); 
 
   // Clear trash data to prevent undefined behavior.
-  for(int i = 0; i < 3; i++) {
+  for(int i = 0; i < 14; i++) {
     dataBuffer[i] = 0; 
   }
 
