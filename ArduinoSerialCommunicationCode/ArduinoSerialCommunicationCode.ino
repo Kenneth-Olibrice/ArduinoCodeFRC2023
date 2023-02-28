@@ -2,11 +2,13 @@
 
 #include <Wire.h>
 #define SENSOR_ADDRESS 0x52
-#define NEOPIXEL_PIN 0 // Determine this value once we have the robot.
+#define NEOPIXEL_PIN 8
+#define PS_DATA_0 0x08
 
 uint8_t* dataBuffer = new uint8_t[14]; // Proximity Sensor, Infared, Green, Blue, Red (In order of reception).
 uint8_t* LED_ADDRESSES = new uint8_t[2];
-Adafruit_NeoPixel communicationStrip(32, NEOPIXEL_PIN, NEO_GRB ); // This is the strip the human player will use to determine the desired gamepiece.
+uint8_t* rgbValuesToSend = new uint8_t[3];
+Adafruit_NeoPixel communicationStrip(30, NEOPIXEL_PIN, NEO_GRB); // This is the strip the human player will use to determine the desired gamepiece.
 
 void setup() {
   Serial.begin(9600);
@@ -23,6 +25,7 @@ void setup() {
   LED_ADDRESSES[0] = 0; // This is the LED strip that indicates the currently held gamepiece.
   LED_ADDRESSES[1] = 0; // This is the LED strip that allows the driver/operator to signal to the human player which gamepiece they want placed onto the field.
   
+  communicationStrip.begin();
 
 }
 
@@ -36,13 +39,21 @@ void setup() {
 */
 void loop() {
   getPeripheralData(dataBuffer);
-  if(Serial.availableForWrite() >= 12) {
-    sendDataToRoboRIO();
-  }
+  interperetPeripheralData(dataBuffer, rgbValuesToSend);
+
+
 
   if(Serial.available() > 0) { // RoboRIO has something to say.
     // TODO add the read function once its finished to this section.
   }
+
+
+  uint32_t packedRGB = communicationStrip.ColorHSV(getHue(rgbValuesToSend),200, 220);
+  Serial.println(packedRGB);
+  for(int i =0; i < 30; i++) {
+    communicationStrip.setPixelColor(i, packedRGB);
+  }
+  communicationStrip.show();
   delay(150);
 }
 
@@ -68,7 +79,16 @@ void writeRegister(uint8_t reg, uint8_t value) {
 }
 
 void getPeripheralData(uint8_t* outArray) {
-  readRegisters(0x08, 14, outArray);
+  readRegisters(PS_DATA_0, 14, outArray);
+}
+
+void interperetPeripheralData(uint8_t* inArray, uint8_t* outArray) {
+  uint16_t red = (inArray[11])|((inArray[12]<<8)&0xff);
+  uint16_t green = (inArray[5])|((inArray[6]<<8)&0xff);
+  uint16_t blue = (inArray[8])|((inArray[9]<<8)&0xff);
+  outArray[0] = inArray[11];
+  outArray[1] = inArray[5];
+  outArray[2] = inArray[8];
 }
 
 /**
@@ -86,4 +106,17 @@ void sendDataToRoboRIO() {
 }
 
 void readRoboRIOData(uint8_t* outArray) {
+}
+
+uint16_t getHue(uint8_t* rgbArray) {
+  double maxValue = max(rgbArray[0], max(rgbArray[1], rgbArray[2]));
+  if(maxValue <= 0) return; // Avoid division by zero errors.
+  double minValue = min(rgbArray[0], min(rgbArray[1], rgbArray[2]));
+  double intermediateValue = (maxValue + minValue) / 2; // In case the following code fails, use the arithmetic average of the min and max.
+  for(int i = 0; i < 3; i++) {
+    if(rgbArray[i] != maxValue && rgbArray[i] != minValue) intermediateValue = rgbArray[i];
+  }
+
+  double hue = ((intermediateValue - minValue) / maxValue)*360; // Express this ratio in degrees.
+  return (uint16_t) hue;
 }
