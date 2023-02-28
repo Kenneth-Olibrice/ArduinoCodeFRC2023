@@ -3,7 +3,7 @@
 #include <Wire.h>
 #define SENSOR_ADDRESS 0x52
 #define NEOPIXEL_PIN 8
-#define PS_DATA_0 0x08
+#define PS_DATA_0 0x08 // First register in the data block read.
 
 uint8_t* dataBuffer = new uint8_t[14]; // Proximity Sensor, Infared, Green, Blue, Red (In order of reception).
 uint8_t* LED_ADDRESSES = new uint8_t[2];
@@ -48,11 +48,13 @@ void loop() {
   }
 
 
-  uint32_t packedRGB = communicationStrip.ColorHSV(getHue(rgbValuesToSend),200, 220);
-  Serial.println(packedRGB);
+  uint32_t packedRGB = communicationStrip.ColorHSV(getHue(rgbValuesToSend),255, 255); // Full hue, full brightness
+  // uint32_t packedRGB = communicationStrip.ColorHSV(getHue(rgbValuesToSend),255, 255); // Full hue, half brightness.
+  // uint32_T packedRGB =  communicationStrip.ColorHSV(getHue(rgbValuesToSend),255, 0); // Full hue, 0 brightness (lights should be off)
   for(int i =0; i < 30; i++) {
     communicationStrip.setPixelColor(i, packedRGB);
     // communicationStrip.setPixelColor(i, rgbValuesToSend[0], rgbValuessToSend[1], rgbValuesToSend[2]); // Send RGB Values
+    if(getHue(rgbValuesToSend))
   }
   communicationStrip.show();
   delay(150);
@@ -118,6 +120,9 @@ uint16_t getHue(uint8_t* rgbArray) {
     if(rgbArray[i] != maxValue && rgbArray[i] != minValue) intermediateValue = rgbArray[i];
   }
 
-  double hue = ((intermediateValue - minValue) / maxValue)*360; // Express this ratio in degrees.
-  return (uint16_t) hue;
+  // double hue = (uint16_t) ((intermediateValue - minValue) / maxValue)*360; // Express this ratio in degrees.
+  double hue = (uint16_t) ((intermediateValue - minValue) / maxValue)*65535; // Express this ratio in 16bits.
+  Serial.print("Hue: ");
+  serial.println(hue);
+  return hue;
 }
