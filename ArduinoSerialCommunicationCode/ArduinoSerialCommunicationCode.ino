@@ -52,6 +52,7 @@ void loop() {
   Serial.println(packedRGB);
   for(int i =0; i < 30; i++) {
     communicationStrip.setPixelColor(i, packedRGB);
+    // communicationStrip.setPixelColor(i, rgbValuesToSend[0], rgbValuessToSend[1], rgbValuesToSend[2]); // Send RGB Values
   }
   communicationStrip.show();
   delay(150);
