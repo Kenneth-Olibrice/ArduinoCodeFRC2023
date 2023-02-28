@@ -126,4 +126,5 @@ uint16_t getHue(uint8_t* rgbArray) {
   Serial.print("Hue: ");
   Serial.println(hue);
   return hue;
+  
 }
