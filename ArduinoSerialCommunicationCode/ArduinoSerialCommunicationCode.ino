@@ -47,12 +47,7 @@ void loop() {
     // TODO add the read function once its finished to this section.
   }
 
-
-  uint32_t packedRGB = communicationStrip.ColorHSV(getHue(rgbValuesToSend),200, 220);
-  Serial.println(packedRGB);
-  for(int i =0; i < 30; i++) {
-    communicationStrip.setPixelColor(i, packedRGB);
-  }
+  topSecretColorMode(communicationStrip, 30);
   communicationStrip.show();
   delay(150);
 }
@@ -119,4 +114,16 @@ uint16_t getHue(uint8_t* rgbArray) {
 
   double hue = ((intermediateValue - minValue) / maxValue)*360; // Express this ratio in degrees.
   return (uint16_t) hue;
+}
+
+void topSecretColorMode(Adafruit_NeoPixel pixel, uint8_t numLEDs) {
+  for(int i = 0; i < numLEDs; i++) {
+    communicationStrip.setPixelColor(i, 255, 0, 129); // Bubblegum pink.
+    delay(40);
+  }
+
+   for(int i = 0; i < numLEDs; i++) {
+    communicationStrip.setPixelColor(i, 0, 0, 0); // LEDs off.
+    delay(40);
+  }
 }
