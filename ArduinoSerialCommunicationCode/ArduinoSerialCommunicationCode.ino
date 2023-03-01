@@ -4,7 +4,7 @@
 #define SENSOR_ADDRESS 0x52
 #define NEOPIXEL_PIN 8
 #define PS_DATA_0 0x08 // First register in the data block read. 
-#define PROXIMITY_THRESHOLD 20
+#define PROXIMITY_THRESHOLD 15
 
 
 uint8_t* valuesFromSensor = new uint8_t[14]; // Proximity Sensor, Infared, Green, Blue, Red (In order of reception).
@@ -39,9 +39,12 @@ void loop() {
   }
 
   hue = getHue(proximityRGB);
-  uint8_t* trueRGB[3];
+  double hueDegrees = (((double) (hue))/65355)*360;
+  Serial.print("degrees: ");
+  Serial.println(hueDegrees);
+    uint8_t* trueRGB[3];
   if(proximityRGB[3] > PROXIMITY_THRESHOLD) {
-  if(hue > 32000 || hue < 3000) {
+  if(hueDegrees > 145) {
   trueRGB[0] = 148;
   trueRGB[1] = 0;
   trueRGB[2] = 211;
@@ -50,14 +53,20 @@ void loop() {
     trueRGB[1] = 255;
     trueRGB[2] = 0; 
   }
+  } else {
+    trueRGB[0] = 0;
+    trueRGB[1] = 0;
+    trueRGB[2] = 0;
+  }
   for(int i =0; i < 30; i++) {
     communicationStrip.setPixelColor(i, trueRGB[0], trueRGB[1], trueRGB[2]);
     // communicationStrip.setPixelColor(i, proximityRGB[0], rgbValuessToSend[1], proximityRGB[2]); // Send RGB Values
   }
-  }
+  
   Serial.print("proximity:");
   Serial.println(proximityRGB[3]);
   communicationStrip.show();
+  //sendDataToRoboRIO(proximityRGB, 4);
   delay(150);
 }
 
@@ -87,9 +96,6 @@ void getPeripheralData(uint8_t* outArray) {
 }
 
 void pullProximityAndRGBValues(uint8_t* inArray, uint8_t* outArray) {
-  uint16_t red = (inArray[11])|((inArray[12]<<8)&0xff);
-  uint16_t green = (inArray[5])|((inArray[6]<<8)&0xff);
-  uint16_t blue = (inArray[8])|((inArray[9]<<8)&0xff);
   outArray[0] = inArray[11];
   outArray[1] = inArray[5];
   outArray[2] = inArray[8];
@@ -104,9 +110,9 @@ void pullProximityAndRGBValues(uint8_t* inArray, uint8_t* outArray) {
   [8-10]: Blue sensor data.
   [11-13]: Red sensor data.
 */
-void sendDataToRoboRIO() {
-  for(int i = 0; i < 4; i++) {
-    Serial.write(proximityRGB[i]);
+void sendDataToRoboRIO(uint8_t* data, size_t numBytes) {
+  for(int i = 0; i < numBytes; i++) {
+    Serial.write(data[i]);
   }
 }
 
