@@ -47,8 +47,16 @@ void loop() {
     // TODO add the read function once its finished to this section.
   }
 
-  topSecretColorMode(communicationStrip, 30);
-  communicationStrip.show();
+ for(int i = 0; i < 30; i++) {
+    communicationStrip.setPixelColor(i, 255, 0, 129); // Bubblegum pink.
+      communicationStrip.show();
+    delay(30);
+  }  
+  for(int i = 0; i < 30; i++) {
+    communicationStrip.setPixelColor(i, 0, 0, 0); // Bubblegum pink.
+          communicationStrip.show();
+    delay(30);
+  }  
   delay(150);
 }
 
@@ -117,13 +125,7 @@ uint16_t getHue(uint8_t* rgbArray) {
 }
 
 void topSecretColorMode(Adafruit_NeoPixel pixel, uint8_t numLEDs) {
-  for(int i = 0; i < numLEDs; i++) {
-    communicationStrip.setPixelColor(i, 255, 0, 129); // Bubblegum pink.
-    delay(40);
-  }
+ 
 
-   for(int i = 0; i < numLEDs; i++) {
-    communicationStrip.setPixelColor(i, 0, 0, 0); // LEDs off.
-    delay(40);
-  }
+   
 }
