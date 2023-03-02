@@ -4,7 +4,7 @@
 #define SENSOR_ADDRESS 0x52
 #define NEOPIXEL_PIN 8
 #define PS_DATA_0 0x08 // First register in the data block read. 
-#define PROXIMITY_THRESHOLD 15
+#define PROXIMITY_THRESHOLD 10
 
 
 uint8_t* valuesFromSensor = new uint8_t[14]; // Proximity Sensor, Infared, Green, Blue, Red (In order of reception).
@@ -23,14 +23,6 @@ void setup() {
   }
 }
 
-/** RIO-ARDUINO PROTOCOL:
-  1. RoboRIO will read information from available peripheral devices.
-  2. Arduino will send any available peripheral data to the RoboRIO.
-  3 When the Driver/Operator wants to signal a color, 
-       they will press a button and the RoboRIO will run a command to periodically ping the Arduino with required information. 
-       The arduino will acknowledge and the RoboRIO will stop pinging.
-  4. The Arduino will adjust the LEDs accordingly.
-*/
 void loop() {
   getPeripheralData(valuesFromSensor);
   pullProximityAndRGBValues(valuesFromSensor, proximityRGB);
@@ -44,7 +36,7 @@ void loop() {
   Serial.println(hueDegrees);
     uint8_t* trueRGB[3];
   if(proximityRGB[3] > PROXIMITY_THRESHOLD) {
-  if(hueDegrees > 145) {
+  if(hueDegrees > 158) {
   trueRGB[0] = 148;
   trueRGB[1] = 0;
   trueRGB[2] = 211;
@@ -102,14 +94,6 @@ void pullProximityAndRGBValues(uint8_t* inArray, uint8_t* outArray) {
   outArray[3] = inArray[0];
 }
 
-/**
-  Index values:
-  [0-1]: Proximity sensor.
-  [2-4]: Infared.
-  [5-7]: Green sensor data.
-  [8-10]: Blue sensor data.
-  [11-13]: Red sensor data.
-*/
 void sendDataToRoboRIO(uint8_t* data, size_t numBytes) {
   for(int i = 0; i < numBytes; i++) {
     Serial.write(data[i]);
