@@ -15,7 +15,7 @@ void setup() {
   for(int i = 0; i < 3; i++) {
     rgbFromRIO[i] = 0;
   }
-  communicationStrip.fill(0, 0, 30);
+  communicationStrip.fill(0, 0, 0);
 
 }
 
